@@ -1,22 +1,17 @@
 FROM ubuntu
 
-RUN apt-get -qy install wget python-minimal inotify-tools make
+VOLUME ["/dropbox"]
 
-ENV HOME /data
-ENV WGET wget --no-check-certificate -q
-RUN mkdir /data /image && \
-	cd image && \
-	$WGET -O - "https://www.dropbox.com/download?plat=lnx.x86_64" | tar xzf -
+RUN apt-get -qy install wget python-minimal
 
-VOLUME ["/data"]
-ADD bin /image/bin
-RUN cd /image/bin && \
-    $WGET "https://www.dropbox.com/download?dl=packages/dropbox.py" -O dropbox.py && \
-    chmod a+x dropbox.py && \
-    ln -s `pwd`/dropbox.py d
+ENV HOME /home/dropbox
 
-ENV PATH /image/bin:$PATH
-ENV DROPBOX_DIR $HOME/Dropbox
+RUN /usr/sbin/useradd --create-home --home-dir $HOME --shell /bin/bash --uid 1000 dropbox
 
-WORKDIR /data
-CMD ["/image/bin/launch"]
+USER dropbox
+
+RUN cd $HOME && wget -O - "https://www.dropbox.com/download?plat=lnx.x86_64" | tar xzf -
+
+RUN cd $HOME && ln -s /dropbox/.dropbox && ln -s /dropbox/.dropbox-master && ln -s /dropbox/Dropbox
+
+CMD ["/home/dropbox/.dropbox-dist/dropboxd"]

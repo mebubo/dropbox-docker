@@ -1,32 +1,24 @@
-# Configure these:
-DOCKER := "/usr/bin/docker.io"  # Using Ubuntu 14.04's docker.io package
-HTTPPORT := 8080
-# End of user configuration.
+DOCKER := "/usr/bin/docker.io"
 
-IMAGE := srid/dropbox
-COMPUTER_NAME := "docker-container"
-PWD := $(shell pwd)
-RUNARGS := -v ${PWD}/data:/data:rw -p ${HTTPPORT}:80 -h ${COMPUTER_NAME}
+IMAGE := mebubo/docker-dropbox
+COMPUTER_NAME := "docker-dropbox"
+RUNARGS := -v /dropbox:/dropbox:rw -h ${COMPUTER_NAME}
 
-all:
-	sudo ${DOCKER} build -t ${IMAGE} .
+build:
+	${DOCKER} build -t ${IMAGE} .
 
 run:	stop
-	sudo ${DOCKER} run -d --name dropbox_run ${RUNARGS} ${IMAGE}
-	sudo ${DOCKER} logs -f dropbox_run
+	${DOCKER} run -d --name dropbox_run ${RUNARGS} ${IMAGE}
+	${DOCKER} logs -f dropbox_run
 stop:
-	sudo ${DOCKER} kill dropbox_run || true
-	sudo ${DOCKER} rm -v dropbox_run || true
+	${DOCKER} kill dropbox_run || true
+	${DOCKER} rm -v dropbox_run || true
 
 # inspect the image
 shell:
-	sudo ${DOCKER} run --rm --name dropbox_shell -t -i ${RUNARGS} ${IMAGE} bash
+	${DOCKER} run --rm --name dropbox_shell -t -i ${RUNARGS} ${IMAGE} bash
 
 
 clean:
-	sudo ${DOCKER} rmi ${IMAGE}
+	${DOCKER} rmi ${IMAGE}
 
-clean_data:
-	sudo rm -rf ./data
-	mkdir data
-	touch data/.gitkeep
